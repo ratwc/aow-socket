@@ -1,0 +1,12 @@
+# ignore pycache
+__pycache__
+data/__pycache__
+
+# ignore .DS_Store
+lib/.DS_Store
+lib/python3.8/.DS_Store
+lib/python3.8/site-packages/.DS_Store
+
+
+# ignore txt file
+*.txt

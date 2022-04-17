@@ -3,6 +3,7 @@ from flask import Flask
 from flask_socketio import SocketIO
 from threading import Lock
 from flask_socketio import send, emit
+import json
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'aow-senior'
@@ -17,35 +18,30 @@ def price_connect():
 
 # function callback data when new tick data occur.
 def get_tick(price, df):
-    socketio.emit("tick_data", price)
-    get_indicator(df) # call the indicator with detial that send from frontend
-
+    df['Timestamp'] = df.index
+    df['Symbol'] = price['Symbol']
+    tick_df = df[['Timestamp', 'Symbol', 'Bid']]
+    tick_json = tick_df.to_json(orient='records')
+    socketio.emit("tick_data", tick_json)
+    
 # get data from specific symbol
 @socketio.on("request_tick")
 def tick_data(symbol):
-     from data.getdata import sub_tick
-     sub_tick(con, symbol, get_tick)
+    from data.getdata import sub_tick
+    sub_tick(con, symbol, get_tick)
 
-# subscribe all instruments
-def sub_all_symbols():
+# ----------- Get Instruments -----------
+
+@socketio.on("request_instruments")
+def instruments():
     from data.getdata import get_instruments
-    pairs = get_instruments(con)
-    # for symbol in pairs : tick_data(symbol)
-    tick_data("EUR/USD")
+    all_pairs = json.dumps(get_instruments(con))
+    socketio.emit("instruments", all_pairs)
 
-# -----------------------------------------------
-# -------------- Get Indicator Data -------------
-def get_indicator(df):
-    from data.indicator import moving_average
-    data = moving_average(df, "1Min", "Close", "Simple", 2)
-    socketio.emit("indicator_data", {"value" : round(data.tail(1).values[0], 5)})
 
-@socketio.on("request_indicator")
-def indicator_parameters(json):
-     print(json)
+# -------------- Get NEWS Data --------------
 
 if __name__ == '__main__':
-    global con
+    global con # global variable with connect to fxcm server
     con = price_connect()
-    sub_all_symbols() # get all instruments and subscribe
     socketio.run(app, port=8000)

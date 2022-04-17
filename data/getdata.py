@@ -2,8 +2,10 @@
 
 # function to subscribe data.
 def sub_tick(con, symbol, get_tick): # connect, symbol
+
     # unsubscribe symbol 
-    con.unsubscribe_market_data(symbol)
+    for sub_symbol in con.get_subscribed_symbols() :
+        con.unsubscribe_market_data(sub_symbol)
 
     # subscribe symbol
     con.subscribe_market_data(symbol, (get_tick, ))
