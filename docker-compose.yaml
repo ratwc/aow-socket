@@ -1,0 +1,11 @@
+version: "3"
+
+services:
+  aow_socket:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    container_name: aow-socket
+    restart: always
+    ports:
+      - "8000:8000"

@@ -10,3 +10,5 @@ lib/python3.8/site-packages/.DS_Store
 
 # ignore txt file
 *.txt
+
+.vscode
