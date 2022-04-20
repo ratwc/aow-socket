@@ -1,7 +1,6 @@
 # ignore pycache
 __pycache__
-data/__pycache__
-*$py.class
+*.pyc
 
 # ignore .DS_Store
 lib/.DS_Store
