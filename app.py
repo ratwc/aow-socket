@@ -5,8 +5,6 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'aow-senior'
 socketio = SocketIO(app, cors_allowed_origins="*")
 
-con = None # connect to fxcm server variable
-
 # get connection from fxcm server
 def price_connect():
     from libs.connect import connect
@@ -36,17 +34,22 @@ def unsub_symbol():
 @socketio.on("sub_all_symbols")
 def sub_symbols():
     from data.getdata import get_instruments
+    from data.initial import initial_ohlc
     all_pairs = get_instruments(con)
-    for symbol in all_pairs:
+    for symbol in all_pairs[:1]:
+        # real subscribe data to get realtime
         tick_data(symbol)
-
-import send # module to mange the data to send to client
+        # initial data if running on close market day
+        initial_ohlc(symbol, con)
 
 # main function
 if __name__ == '__main__':
-    con = price_connect()
-    # tick_data("EUR/USD")
-    sub_symbols()
-    socketio.run(app, port=8000)
+    global con
+    con = None
+    # con = price_connect() # connect to fxcm server variable
+    import send # module to mange the data to send to client
+    # sub_symbols() # sub all symbol fot get realtime data 
+
+    socketio.run(app, port=8000, host='0.0.0.0')
     
 

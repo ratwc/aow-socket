@@ -67,15 +67,11 @@ def manage_ohlc(tick, symbol, con):
     # check first initial data has finished
     if symbols_data[symbol]['first_finished'] == False:
         symbols_data[symbol]['first_finished'] = True
-        # initial first ohlc data
-        # thread_get_ohlc = threading.Thread(target=get_ohlc, args=(symbol, con,))
-        # thread_get_ohlc.start()
-        # thread_get_ohlc.join()
         get_ohlc(symbol, con)
     
     # manage tick data on OHLC 5 minutes
     recent_ohlc_m5 = symbols_data[symbol]['ohlc_m5']
-    if recent_ohlc_m5 != None:
+    if recent_ohlc_m5 != None and tick != "initial":
 
         # get checking time to handle if new save time occur
         last_seconds = math.floor(int(tick[-1:].index.values[0]) / (10 ** 9))
@@ -111,10 +107,6 @@ def manage_ohlc(tick, symbol, con):
 
             save_data(symbol, recent_ohlc_m5, last_seconds)
 
-            # thread_save_data = threading.Thread(target=save_data, args=(symbol, recent_ohlc_m5, last_seconds,))
-            # thread_save_data.start()
-            # thread_save_data.join()
-
         if symbols_data[symbol]['midnight_time'] != what_day:
 
             symbols_data[symbol]['midnight_time'] = what_day
@@ -139,7 +131,7 @@ def save_data(symbol, data, last_seconds):
         if del_res.acknowledged == True:
                     
             DB['history'].insert_one({"Symbol": symbol, "OHLC_M5":  json.dumps(data)})
-            print(symbol, " was saved at timestamp > ", last_seconds)
+            print(symbol, " was saved at timestamp > ", last_seconds * 1000)
 
     except: 
         # some error on save to db

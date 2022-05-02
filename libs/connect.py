@@ -3,7 +3,7 @@ import fxcmpy
 
 def connect():
     # define access api token
-    access_token = "427c34263cffb2f79c1406d7f5ab5e12bf625946"
+    access_token = "d808da394895605e414394e79c1a3c9ffafad862"
 
     # connect to fxcm server
     con = fxcmpy.fxcmpy(access_token=access_token, log_level='error', server='demo', log_file='log.txt')

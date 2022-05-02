@@ -32,7 +32,7 @@ def get_instruments(con):
     # fix_pairs = ['EUR', 'JPY', 'USD', 'CHF', 'CAD', 'GBP', 'AUD', 'NZD', 'XAU', 'XAG']
 
     # return list(set.intersection(set([pair for fix in fix_pairs for pair in pairs if fix in pair.split("/")[0]]) \
-    #              , set([pair for fix in fix_pairs for pair in pairs if fix in pair.split("/")[1]])))'
+    #              , set([pair for fix in fix_pairs for pair in pairs if fix in pair.split("/")[1]])))
 
     return ['EUR/USD', 'USD/JPY', 'GBP/USD', 'USD/CHF' ,'USD/CAD' ,'AUD/USD', 'NZD/USD', 'XAU/USD']
 

@@ -33,7 +33,12 @@ def MA(symbol, tf, params): # tick data, timeframe, apply price, type of MA, win
         elif tick_value < ta_value: signal = "SELL"
         else: signal = "NEUTRAL"
 
-        return { "timeframe": tf, "value": ta_value, "signal": signal, "datetime": symbols_data[symbol]['last_seconds']}
+        # check if market
+        if 'last_seconds' in symbols_data[symbol]:
+            last_seconds = symbols_data[symbol]['last_seconds']
+        else : last_seconds = use_data[-1:].index.values[0]
+
+        return { "timeframe": tf, "value": ta_value, "signal": signal, "datetime": last_seconds}
     
-    except :
-        print("Some Error on MA indicator calculation")
+    except Exception as e :
+        print("MA calculation error on > ", e)
