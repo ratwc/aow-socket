@@ -12,3 +12,6 @@ lib/python3.8/site-packages/.DS_Store
 *.txt
 
 .vscode
+
+# ignore lib
+lib
