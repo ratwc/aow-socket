@@ -53,7 +53,7 @@ def get_ohlc(symbol, con): # function for initial data of each symbol
 
     print("Initial ", symbol, " seccess")
 
-def manage_ohlc(tick, symbol, con):
+def manage_ohlc(tick, symbol, con, status):
 
      # check symbol is a new symbol to get ohlc or not
     global symbols_data, save_seconds
@@ -71,7 +71,7 @@ def manage_ohlc(tick, symbol, con):
     
     # manage tick data on OHLC 5 minutes
     recent_ohlc_m5 = symbols_data[symbol]['ohlc_m5']
-    if recent_ohlc_m5 != None and tick != "initial":
+    if recent_ohlc_m5 != None and status != "initial":
 
         # get checking time to handle if new save time occur
         last_seconds = math.floor(int(tick[-1:].index.values[0]) / (10 ** 9))

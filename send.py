@@ -1,3 +1,4 @@
+from curses.ascii import RS
 from socket import socket
 from flask import Flask, request
 from flask_socketio import SocketIO, send, emit
@@ -36,33 +37,45 @@ def send_current(params):
 # ---------- Send Indicator Signal ----------
     
 from data.indicator import *
+from data.summary import summary
 @socketio.on("request_indicators")
 def send_indicators(indicators_config):
     indicators, symbol, timeframes  = indicators_config['indicators'], indicators_config['symbol'], indicators_config['timeframes']
-    return_indicators = {}
+    indicators_signal = {}
     # calculate each indicator
+    has_error = False
     for indicator in indicators:
-        # get variable of each indicator
-        model = indicator['indicator_model']
-        params = indicator['parameters']
-        # signal in each indicator 
-        temp_signals = []
-        for tf in timeframes:
-            # space to add more indicator model calculation
-            if model == "MA": temp_signals.append(MA(symbol, tf, params))
+        try:
+            # get variable of each indicator
+            model = indicator['indicator_model']
+            params = indicator['parameters']
+            # signal in each indicator 
+            temp_signals = []
+            for tf in timeframes:
+                # space to add more indicator model calculation
+                if model == "MA": temp_signals.append(MA(symbol, tf, params))
+                if model == "MACD": temp_signals.append(MACD(symbol, tf, params))
+                if model == "RSI": temp_signals.append(RSI(symbol, tf, params))
 
 
-        # save signal to dict
-        return_indicators[indicator['indicator_id']] = temp_signals
+            # save signal to dict
+            indicators_signal[indicator['indicator_id']] = temp_signals
+            if 0 in temp_signals:
+                has_error = True
+        except:
+            print("Can not calculate some indicator because invalid model or parameters missing!")
 
-    print(return_indicators)
-    socketio.emit("indicators", return_indicators)
+    if has_error :
+        socketio.emit("indicators", "ERROR")
+    else :
+        return_indicators = {"indicators_signal": indicators_signal, "summary": summary(indicators_signal)}
+        socketio.emit("indicators", json.dumps(return_indicators))
 
 # ----------- Send NEWS data -------------
 from data.news import *
 @socketio.on("request_forex_news")
 def send_forex_news():
-    socketio.emit("forex_news", get_forex_news())
+    socketio.emit("forex_news", json.dumps(get_forex_news()))
 
 # @app.route('/get_economic_calendar', methods=['GET'])
 @socketio.on("get_economic_calendar")

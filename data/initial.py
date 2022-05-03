@@ -3,7 +3,7 @@ from data.tick import manage_ohlc
 
 def initial_ohlc(symbol, con):
 
-    manage_ohlc("initial", symbol, con)
+    manage_ohlc(None, symbol, con, "initial")
 
 
 def initial_price(symbol, con):

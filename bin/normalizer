@@ -1,6 +1,4 @@
-#!/bin/sh
-'''exec' "/Users/ratwc/Desktop/project workspace/aow_back/flask-env/bin/python" "$0" "$@"
-' '''
+#!/Users/ratwc/Desktop/Senior-Project/aow-socket/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys
