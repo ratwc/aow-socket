@@ -53,9 +53,15 @@ def send_indicators(indicators_config):
             temp_signals = []
             for tf in timeframes:
                 # space to add more indicator model calculation
+                # ------- THREND -------
                 if model == "MA": temp_signals.append(MA(symbol, tf, params))
-                if model == "MACD": temp_signals.append(MACD(symbol, tf, params))
-                if model == "RSI": temp_signals.append(RSI(symbol, tf, params))
+                elif model == "MACD": temp_signals.append(MACD(symbol, tf, params))
+                elif model == "PSAR": temp_signals.append(PSAR(symbol, tf, params))
+                # ------- MOMENTUM -------
+                elif model == "RSI": temp_signals.append(RSI(symbol, tf, params))
+                elif model == "CCI": temp_signals.append(CCI(symbol, tf, params))
+                elif model == "STOCH": temp_signals.append(STOCH(symbol, tf, params))
+                elif model == "W%R": temp_signals.append(WPCR(symbol, tf, params))
 
 
             # save signal to dict
