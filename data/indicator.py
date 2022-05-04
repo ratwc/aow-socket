@@ -115,7 +115,7 @@ def RSI(symbol, tf, params): # apply_price, period, overbought, oversold
         elif apply_price.lower() == 'low': use_data = ohlc_data['Low'][-period:]
 
         res_ta  = ta.momentum.RSIIndicator(use_data, window=period).rsi()
-        ta_value = round(res_ta[-1:].values[0], decimal_dict[symbol])
+        ta_value = round(res_ta[-1:].values[0], 2)
 
         if ta_value > overbought: signal = "OVERBOUGHT"
         elif ta_value < oversold: signal = "OVERSOLD"
