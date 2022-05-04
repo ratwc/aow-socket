@@ -26,12 +26,12 @@ from libs.convert import ohlc_to_ohlc
 @socketio.on("request_ohlc_data")
 def send_ohlc(params):
     symbol, tf = params['symbol'], params['timeframe']
-    socketio.emit("ohlc_data", get_ohlc(symbol, tf))
+    socketio.emit("ohlc_data", json.dumps(get_ohlc(symbol, tf)))
 
 @socketio.on("request_current_ohlc")
 def send_current(params):
     symbol, tf = params['symbol'], params['timeframe']
-    socketio.emit("current_ohlc", json.loads(get_ohlc(symbol, tf))[-1:][0])
+    socketio.emit("current_ohlc", json.dumps(json.loads(get_ohlc(symbol, tf))[-1:][0]))
 
 
 # ---------- Send Indicator Signal ----------
@@ -66,7 +66,7 @@ def send_indicators(indicators_config):
             print("Can not calculate some indicator because invalid model or parameters missing!")
 
     if has_error :
-        socketio.emit("indicators", "ERROR")
+        socketio.emit("indicators", json.dumps("ERROR"))
     else :
         return_indicators = {"indicators_signal": indicators_signal, "summary": summary(indicators_signal)}
         socketio.emit("indicators", json.dumps(return_indicators))
@@ -80,14 +80,14 @@ def send_forex_news():
 # @app.route('/get_economic_calendar', methods=['GET'])
 @socketio.on("get_economic_calendar")
 def send_economic_calendar(symbol):
-    socketio.emit("economic_calendar", get_economic_calendar(symbol['symbol']))
+    socketio.emit("economic_calendar", (get_economic_calendar(symbol['symbol'])))
 
 # ----------- Send Instruments -----------
 @socketio.on("request_instruments")
 def instruments():
     from data.getdata import get_instruments
     all_pairs = json.dumps(get_instruments(con))
-    socketio.emit("instruments", all_pairs)
+    socketio.emit("instruments", json.dumps(all_pairs))
 
 # ------------ Initial Price ------------
 from data.initial import initial_price
@@ -95,4 +95,4 @@ from data.initial import initial_price
 def send_initial_price(symbol):
     tick = initial_price(symbol, con)
     if bool(tick) :
-        socketio.emit("tick_data", tick)
+        socketio.emit("tick_data", json.dumps(tick))

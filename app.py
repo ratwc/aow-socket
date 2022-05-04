@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_socketio import SocketIO, send, emit
+import json
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'aow-senior'
@@ -16,7 +17,7 @@ def price_connect():
 def get_tick(price, df):
     from data.tick import manage_ohlc
     tick = manage_ohlc(df['Bid'], price['Symbol'], con, "realtime") # manage tick to get all data
-    socketio.emit("tick_data", tick)
+    socketio.emit("tick_data", json.dumps(tick))
     
 # get data from specific symbol
 @socketio.on("request_tick")
