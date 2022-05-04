@@ -1,10 +1,10 @@
-FROM python:3.8-slim-buster
+FROM python:3.8.12-slim-buster
 
 RUN python3 -m venv /opt/venv
 
 # Install dependencies:
 COPY . .
-RUN . /opt/venv/bin/activate && pip install flask==2.0.3 && pip install flask_socketio==5.1.1 && pip install fxcmpy==1.2.10 && pip install pymongo && pip install dnspython && pip install ta
+RUN . /opt/venv/bin/activate && pip install -r requirements.txt
 
 # Run the application:
 COPY app.py .
