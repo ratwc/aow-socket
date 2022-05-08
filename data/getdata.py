@@ -1,5 +1,6 @@
+import datetime as dt
+import math
 # get data from fxcm server
-
 # function to subscribe data.
 def sub_tick(con, symbol, get_tick): # connect, symbol
 
@@ -35,6 +36,12 @@ def get_instruments(con):
     #              , set([pair for fix in fix_pairs for pair in pairs if fix in pair.split("/")[1]])))
 
     return ['EUR/USD', 'USD/JPY', 'GBP/USD', 'USD/CHF' ,'USD/CAD' ,'AUD/USD', 'NZD/USD', 'XAU/USD']
+
+def market_status():
+
+    is_open = (math.floor(dt.datetime.utcnow().timestamp()) - 162000) % 604800 >= 172800 
+
+    return is_open
 
 
 
