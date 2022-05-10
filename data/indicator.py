@@ -1,10 +1,13 @@
 # get all technical indicator
-from locale import normalize
-from signal import signal
 from libs.convert import ohlc_to_ohlc
 import warnings
 import ta
 from data.tick import symbols_data, default_name, default_tf
+import requests as r
+from bs4 import BeautifulSoup as bs
+import datetime as dt
+import math
+import re
 
 warnings.filterwarnings("ignore") # disable any warnings
 
@@ -267,6 +270,93 @@ def WPCR(symbol, tf, params): # period, overbought, oversold
 
     except Exception as e :
         print("W%R calculation error on > ", e)
+
+
+## ------------------ OTHER INDICATORS ------------------
+
+def Strength():
+
+    try:
+        def multiple_replacer(*key_values):
+            replace_dict = dict(key_values)
+            replacement_function = lambda match: replace_dict[match.group(0)]
+            pattern = re.compile("|".join([re.escape(k) for k, v in key_values]), re.M)
+            return lambda string: pattern.sub(replacement_function, string)
+                
+        def multiple_replace(string, *key_values):
+            return multiple_replacer(*key_values)(string)
+
+
+        #get the site and parse the html
+        x = r.get("http://www.livecharts.co.uk/currency-strength.php").text
+
+        cur = bs(x, "html5lib")
+
+        #Find all Currency by id
+        pairs = [c for c in cur.find_all(id="map-innercontainer-symbol")]
+
+        #To be excluded
+        y = str('style="background-image:none"')
+
+        #Finding the current level we need to loop through all levels
+        levels = [
+            'map-innercontainer-strong3',
+            'map-innercontainer-strong2',
+            'map-innercontainer-strong1',
+            'map-innercontainer-weak1',
+            'map-innercontainer-weak2',
+            'map-innercontainer-weak3',
+        ]
+
+        lv = [l for l in cur.find_all(id=levels)]
+
+        mine = lv
+
+        replacements = (u"div", u""),(u'id="map-innercontainer-',u""),(u"<",""),(u'style="background-image:none"',u""),(u'">',""),(u"/",u""),(u"",u""),(u">",u""),(u'"',u"")
+
+        strength_dict = dict()
+        for i in range(10):
+            pair_strength = multiple_replace(str(mine[(i)*6:(i+1)*6]), *replacements)
+            pair_strength = [st.strip() for st in pair_strength.replace(u'\xa0', u' ').replace('[', '').replace(']', '').split(",")]
+            # get strength number 
+            num_strength = 7 - len([lowest for lowest in pair_strength if lowest == "weak3"])
+
+            strength_dict[pairs[i].text[:3]] = num_strength
+
+        return strength_dict
+
+    except Exception as e :
+        print("Strength calculation error on > ", e)
+
+def Volatility(symbol, params): # time_interval
+
+    MAX_RANGE = 24
+
+    try: 
+        if symbol not in symbols_data or symbols_data[symbol][default_name] == None: return 0
+
+        # get data for calculate
+        time_interval = params['time_interval']
+
+        # get data and convert to specific timeframe
+        ohlc_data = ohlc_to_ohlc(symbols_data[symbol][default_name], default_tf, time_interval)
+
+        # get volatility
+        d = ohlc_data[-(MAX_RANGE+1):]['Close']
+        d_pips = abs((d - d.shift(1))[-MAX_RANGE:] * 10 ** (decimal_dict[symbol] - 1))
+
+        # def format(time):
+        #     return dt.datetime.utcfromtimestamp(math.floor(time / 1000)).strftime("%H:%M")
+
+        # d_pips.index = d_pips.index.map(format)
+
+        X = d_pips.index.values.tolist()
+        Y = list(map(lambda v: round(v, 1), d_pips.tolist()))
+
+        return { "X": X, "Y": Y } 
+
+    except Exception as e :
+        print("Volatility calculation error on > ", e)
 
 
 

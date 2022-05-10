@@ -2,24 +2,13 @@ from socket import socket
 from flask import Flask, request
 from flask_socketio import SocketIO, send, emit
 import json
-import numpy as np
 # import socket and connect from app.py
 try:
-    from __main__ import socketio, con, app
+    from __main__ import socketio, con, app, NpEncoder
 except ImportError:
-    from app import socketio, con, app
+    from app import socketio, con, app, NpEncoder
 
 from data.tick import symbols_data, default_name, default_tf
-
-class NpEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, np.integer):
-            return int(obj)
-        if isinstance(obj, np.floating):
-            return float(obj)
-        if isinstance(obj, np.ndarray):
-            return obj.tolist()
-        return super(NpEncoder, self).default(obj)
 
 # ----------- Send OHLC Data -----------
 def get_ohlc(symbol, tf):
@@ -74,7 +63,6 @@ def send_indicators(indicators_config):
                     elif model == "STOCH": temp_signals.append(STOCH(symbol, tf, params))
                     elif model == "W%R": temp_signals.append(WPCR(symbol, tf, params))
 
-
                 # save signal to dict
                 indicators_signal[indicator['indicator_id']] = temp_signals
                 if 0 in temp_signals:
@@ -89,6 +77,28 @@ def send_indicators(indicators_config):
             socketio.emit("indicators", json.dumps(return_indicators, cls=NpEncoder))
     except Exception as e:
         print("Indicator signals calculation error, with error code: ", e)
+        socketio.emit("indicators", json.dumps("ERROR", cls=NpEncoder))
+
+@socketio.on("request_onetime_indicators")
+def send_onetime_indicators(indicators_config):
+    try:
+        indicators, symbol = indicators_config['indicators'], indicators_config['symbol']
+        indicators_signal = {}
+        # calculate each indicator
+        for indicator in indicators:
+            # get variable of each indicator
+            model = indicator['indicator_model']
+            params = indicator['parameters']
+            # signal in each indicator 
+            if model == "CURMETER": indicators_signal[indicator['indicator_id']] = Strength()
+            if model == "VOLMETER": indicators_signal[indicator['indicator_id']] = Volatility(symbol, params)
+
+        socketio.emit("onetime_indicators", json.dumps(indicators_signal, cls=NpEncoder))
+
+    except Exception as e:
+        print("Indicator signals calculation error, with error code: ", e)
+        socketio.emit("indicators", json.dumps("ERROR", cls=NpEncoder))
+
 
 # ----------- Send NEWS data -------------
 from data.news import *
@@ -99,7 +109,7 @@ def send_forex_news():
 # @app.route('/get_economic_calendar', methods=['GET'])
 @socketio.on("get_economic_calendar")
 def send_economic_calendar(symbol):
-    socketio.emit("economic_calendar", (get_economic_calendar(symbol['symbol'])))
+    socketio.emit("economic_calendar", json.dumps(get_economic_calendar(symbol['symbol'])))
 
 # ----------- Send Instruments -----------
 @socketio.on("request_instruments")

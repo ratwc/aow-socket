@@ -15,3 +15,6 @@ log.txt
 
 # ignore lib
 lib
+
+# ignore workspace
+workspace

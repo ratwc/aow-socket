@@ -1,23 +1,31 @@
 from flask import Flask
 from flask_socketio import SocketIO, send, emit
 import json
+import numpy as np
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'aow-senior'
 socketio = SocketIO(app, cors_allowed_origins="*")
+class NpEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        if isinstance(obj, np.floating):
+            return float(obj)
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return super(NpEncoder, self).default(obj)
 
 # get connection from fxcm server
 def price_connect():
     from libs.connect import connect_with_api, connect_with_library
     return connect_with_library()
 
-# ----------- Manage Realtime Tick Data -----------
-
-# function callback data when new tick data occur.
+# ----------- Manage Realtime Tick Data -----------# function callback data when new tick data occur.
 def get_tick(price, df):
     from data.tick import manage_ohlc
     tick = manage_ohlc(df['Bid'], price['Symbol'], con, "realtime") # manage tick to get all data
-    socketio.emit("tick_data", json.dumps(tick))
+    socketio.emit("tick_data", json.dumps(tick, cls=NpEncoder))
     
 # get data from specific symbol
 @socketio.on("request_tick")
