@@ -92,6 +92,7 @@ def send_onetime_indicators(indicators_config):
             # signal in each indicator 
             if model == "CURMETER": indicators_signal[indicator['indicator_id']] = Strength()
             if model == "VOLMETER": indicators_signal[indicator['indicator_id']] = Volatility(symbol, params)
+            if model == "PRICEDIS": indicators_signal[indicator['indicator_id']] = Distribution(symbol, params)
 
         socketio.emit("onetime_indicators", json.dumps(indicators_signal, cls=NpEncoder))
 

@@ -6,7 +6,7 @@ import json
 from libs.convert import ohlc_to_ohlc
 
 DB = mongo_connect() # mongodb connect 
-SAVE_DATA = True # state to disable and enable save data to DB
+SAVE_DATA = False # state to disable and enable save data to DB
 
 save_seconds = 3600 # define the every time for save data to db
 symbols_data = dict()

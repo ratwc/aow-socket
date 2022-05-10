@@ -359,6 +359,33 @@ def Volatility(symbol, params): # time_interval
         print("Volatility calculation error on > ", e)
 
 
+def Distribution(symbol, params):
+
+    INTERVAL = 200
+
+    try: 
+        if symbol not in symbols_data or symbols_data[symbol][default_name] == None: return 0
+
+        # get data for calculate
+        tf, period = params['timeframe'], params['period']
+
+        # get data and convert to specific timeframe
+        ohlc_data = ohlc_to_ohlc(symbols_data[symbol][default_name], default_tf, tf)
+
+        # get distribution
+        dis_data = ((ohlc_data['Close'] * 10 ** 5).apply(math.floor) - (ohlc_data['Close'] * 10 ** 5).apply(math.floor) % INTERVAL + math.floor(INTERVAL / 2)).value_counts().sort_index()
+
+        X = dis_data.tolist()
+        Y = list(map(lambda p: p / 10 ** decimal_dict[symbol], dis_data.index.tolist()))
+
+        return { "X": X, "Y": Y } 
+
+    except Exception as e :
+        print("Distribution calculation error on > ", e)
+
+    
+
+
 
 
 
