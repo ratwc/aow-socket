@@ -377,6 +377,8 @@ def Distribution(symbol, params):
 
         X = dis_data.tolist()
         Y = list(map(lambda p: p / 10 ** decimal_dict[symbol], dis_data.index.tolist()))
+        X.reverse()
+        Y.reverse()
 
         return { "X": X, "Y": Y } 
 
