@@ -132,3 +132,13 @@ def send_initial_price(symbol):
 def send_market_status():
     from data.getdata import market_status
     socketio.emit("market_status", market_status())
+
+
+# ============= Backtest Module ===============
+
+from data.backtest import backtest_calculation
+@socketio.on("request_backtest")
+def send_backtest(configs):
+    page_id, from_date, to_date, per_buy, per_sell = configs['page_id'], configs['from_date'], configs['to_date'], configs['per_buy'], configs['per_sell']
+    backtest_result = backtest_calculation(page_id, from_date, to_date, per_buy, per_sell, con, socketio)
+    socketio.emit("backtest",  json.dumps(backtest_result, cls=NpEncoder))
