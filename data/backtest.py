@@ -7,15 +7,16 @@ from libs.backtest_libs import *
 
 MAX_LAST_CANDLES = 100
 DB = mongo_connect() # mongodb connect 
-count = 0
 
-# page_id (string)
-# start_date (milliseconds in timestamp)
-# end_date (milliseconds in timestamp)
-# per_buy (int 0 - 100)
-# per_sell (int 0 - 100)
+"""
+    page_id (string)
+    start_date (milliseconds in timestamp)
+    end_date (milliseconds in timestamp)
+    per_buy (int 0 - 100)
+    per_sell (int 0 - 100)
+"""
 
-def backtest_calculation(page_id, start_date, end_date, per_buy, per_sell, con, socketio): 
+def backtest_calculation(page_id, start_date, end_date, per_buy, per_sell, con, socketio): # count is for counting the progress 
 
     socketio.emit("backtest", json.dumps({"status": "success", "message": "Backtest start", "status_code": 0}) )
 
@@ -82,9 +83,8 @@ def backtest_calculation(page_id, start_date, end_date, per_buy, per_sell, con, 
 
         # calculate progress
         n_tasks = len(range(start_index, len(ohlc_data)))
-        global count
 
-        def calculate_data(idx):
+        def calculate_data(idx, count, progress):
 
             indicators_signal = {}
             time = ohlc_data[idx-1:idx][0]['Datetime'] # current time step
@@ -124,16 +124,20 @@ def backtest_calculation(page_id, start_date, end_date, per_buy, per_sell, con, 
             result = summary(indicators_signal)['summary']
             result.update(ohlc_data[idx-1:idx][0])
 
-            global count
             count += 1
-            progress = round(count * 100 / n_tasks, 2)
+            curr_progress = math.floor(count * 100 / n_tasks)
 
-            socketio.emit("backtest", json.dumps({"status": "success", "message": "Calculating backtest", "progress": progress, "status_code": 2}) )
+            if curr_progress != progress:
+                socketio.emit("backtest", json.dumps({"status": "success", "message": "Calculating backtest", "progress": curr_progress, "status_code": 2}) )
 
-            return result
+            return result, count, curr_progress
 
-        backtest_log = [calculate_data(idx) for idx in range(start_index, len(ohlc_data))]
         count = 0
+        progress = -1
+        backtest_log = []
+        for idx in range(start_index, len(ohlc_data)):
+            result, count, progress = calculate_data(idx, count, progress)
+            backtest_log.append(result)
 
         # print("Success when backtesting")
         socketio.emit("backtest", json.dumps({"status": "success", "message": "Calculate backtest success", "status_code": 3}) )
@@ -201,6 +205,6 @@ def backtest_calculation(page_id, start_date, end_date, per_buy, per_sell, con, 
         print("Fail when analyze data > ", e)
         return {"status": "fail", "message": "Analyze backtest fail!", "status_code": -1}
 
-    return {"status": "success", "message": "Backtest success", "result": backtest_result, "status_code": 5} 
+    return {"status": "success", "message": "Backtest success", "result": backtest_result, "symbol": symbol, "status_code": 5} 
 
 
