@@ -107,10 +107,9 @@ from data.news import *
 def send_forex_news():
     socketio.emit("forex_news", json.dumps(get_forex_news(), cls=NpEncoder))
 
-# @app.route('/get_economic_calendar', methods=['GET'])
 @socketio.on("get_economic_calendar")
 def send_economic_calendar(symbol):
-    socketio.emit("economic_calendar", json.dumps(get_economic_calendar(symbol['symbol'])))
+    socketio.emit("economic_calendar", json.dumps(json.loads(get_economic_calendar(symbol['symbol'])), cls=NpEncoder))
 
 # ----------- Send Instruments -----------
 @socketio.on("request_instruments")
