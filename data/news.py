@@ -14,8 +14,8 @@ def get_forex_news():
     return forex_news
 
 # define day interval
-day_interval_past = 7
-day_interval_future = 15
+day_interval_past = 3
+day_interval_future = 7
 
 def get_economic_calendar(symbol):
 
